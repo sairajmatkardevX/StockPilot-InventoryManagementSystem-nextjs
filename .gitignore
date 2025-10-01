@@ -1,0 +1,26 @@
+﻿# Dependencies
+node_modules/
+/.pnp
+.pnp.js
+
+# Next.js
+/.next/
+/out/
+
+# Environment variables - PROTECT ALL
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+
+# Vercel
+.vercel
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
