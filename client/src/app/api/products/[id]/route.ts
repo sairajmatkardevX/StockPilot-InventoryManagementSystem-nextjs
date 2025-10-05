@@ -1,6 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { authenticateRequest, requireAdmin } from '@/lib/auth';
-import {prisma} from '@/lib/prisma';
+import { PrismaClient } from '@prisma/client';
+
+// TEMPORARY HARCODED DATABASE FOR DEMO
+const prisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: 'postgres://bc426524577fb0f28585900493803037d2bac9c56bf1a2fb74d827635b3f2537:sk_7ou8QqGy5gUvszaFbp5ko@db.prisma.io:5432/postgres?sslmode=require'
+    }
+  }
+});
 
 // GET /api/products/[id] - Get product by ID
 export async function GET(
