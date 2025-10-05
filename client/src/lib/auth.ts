@@ -8,17 +8,9 @@ export interface JWTPayload {
   role: 'ADMIN' | 'USER';
 }
 
-export interface AuthUser {
-  id: string;
-  name: string;
-  email: string;
-  role: 'ADMIN' | 'USER';
-}
-
 export function generateToken(payload: JWTPayload): string {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
+  return jwt.sign(payload, JWT_SECRET, { expiresIn: '10m' }); 
 }
-
 export function verifyToken(token: string): JWTPayload {
   return jwt.verify(token, JWT_SECRET) as JWTPayload;
 }

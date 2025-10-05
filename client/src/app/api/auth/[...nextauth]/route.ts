@@ -1,5 +1,7 @@
 import NextAuth, { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import { prisma } from "@/lib/prisma";
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -13,32 +15,33 @@ export const authOptions: AuthOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          // ✅ CHANGED: Call internal Next.js API route instead of Express
-          const res = await fetch(
-            `http://localhost:3000/api/auth/login`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                email: credentials.email,
-                password: credentials.password,
-              }),
-            }
-          );
+          // Direct database authentication - no API calls
+          const user = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          });
 
-          const data = await res.json();
-
-          if (!res.ok || !data?.user?.id || !data?.user?.role || !data?.token) {
-            console.warn("[NextAuth] Login failed for:", credentials.email);
+          if (!user) {
+            console.warn("[NextAuth] User not found:", credentials.email);
             return null;
           }
 
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+
+          if (!isPasswordValid) {
+            console.warn("[NextAuth] Invalid password for:", credentials.email);
+            return null;
+          }
+
+          console.log("[NextAuth] Login successful for:", credentials.email);
+          
           return {
-            id: data.user.id,
-            name: data.user.name,
-            email: data.user.email,
-            role: data.user.role,
-            token: data.token,
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role as "ADMIN" | "USER",
           };
         } catch (err) {
           console.error("[NextAuth] authorize error:", err);
@@ -48,23 +51,16 @@ export const authOptions: AuthOptions = {
     }),
   ],
 
-  // Session configuration (15 minutes)
   session: { 
     strategy: "jwt",
-    maxAge: 15 * 60, // 15 minutes in seconds
-  },
-
-  // JWT configuration
-  jwt: {
-    maxAge: 15 * 60, // 15 minutes in seconds
+    maxAge: 10 * 60 , // 24 hours
   },
 
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
-        token.token = (user as any).token;
+        token.role = (user as any).role;
       }
       return token;
     },
@@ -72,9 +68,7 @@ export const authOptions: AuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as "ADMIN" | "USER";
-        (session.user as any).token = token.token;
-        (session.user as any).accessToken = token.token;
+        (session.user as any).role = token.role as "ADMIN" | "USER";
       }
       return session;
     },
@@ -87,6 +81,30 @@ export const authOptions: AuthOptions = {
 
   secret: process.env.NEXTAUTH_SECRET,
 };
+
+// Type extensions
+declare module "next-auth" {
+  interface User {
+    role: 'ADMIN' | 'USER';
+  }
+  
+  interface Session {
+    user: {
+      id: string;
+      name?: string | null;
+      email?: string | null;
+      image?: string | null;
+      role: 'ADMIN' | 'USER';
+    }
+  }
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    role: 'ADMIN' | 'USER';
+    id: string;
+  }
+}
 
 const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };
