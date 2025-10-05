@@ -27,6 +27,7 @@
     "next": "^14.2.32",
     "next-auth": "^4.24.11",
     "numeral": "^2.0.6",
+    "prisma": "^6.16.3",
     "react": "^18",
     "react-dom": "^18",
     "react-redux": "^9.2.0",
