@@ -13,9 +13,9 @@ export const authOptions: AuthOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
-          // ✅ CHANGED: Call internal Next.js API route instead of Express
+          // ✅ FIXED: Use environment variable for production URL
           const res = await fetch(
-            `http://localhost:3000/api/auth/login`,
+            `${process.env.NEXTAUTH_URL}/api/auth/login`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
