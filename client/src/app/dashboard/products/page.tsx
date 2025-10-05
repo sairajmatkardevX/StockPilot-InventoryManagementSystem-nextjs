@@ -13,7 +13,7 @@ export default function ProductsPage() {
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
   const [page, setPage] = useState(1);
-  const [limit] = useState(6); // Changed from 10 to 6
+  const [limit] = useState(6);
   const [search, setSearch] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editProductId, setEditProductId] = useState<string | null>(null);
@@ -57,7 +57,7 @@ export default function ProductsPage() {
   if (isError) return <div className="p-4 text-red-500">Failed to load products</div>;
 
   return (
-    <div className="p-6"> {/* Removed min-h-screen and dark mode classes */}
+    <div className="p-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold">Products</h1>
@@ -87,15 +87,15 @@ export default function ProductsPage() {
 
       {/* Table */}
       <div className={`overflow-x-auto rounded-lg shadow ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <table className="w-full min-w-[700px] border-collapse text-left">
+        <table className="w-full min-w-[700px] border-collapse">
           <thead className={isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-100'}>
             <tr>
-              <th className="p-2 border-b text-center w-16">Image</th>
-              <th className="p-2 border-b text-center w-36">Name</th>
-              <th className="p-2 border-b text-center w-24">Price</th>
-              <th className="p-2 border-b text-center w-24">Stock</th>
-              <th className="p-2 border-b text-center w-24">Rating</th>
-              <th className="p-2 border-b text-center w-40">Actions</th>
+              <th className="p-3 border-b text-center w-20">Image</th>
+              <th className="p-3 border-b text-center w-40">Name</th>
+              <th className="p-3 border-b text-center w-32">Price</th>
+              <th className="p-3 border-b text-center w-32">Stock</th>
+              <th className="p-3 border-b text-center w-32">Rating</th>
+              <th className="p-3 border-b text-center w-48">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -104,27 +104,43 @@ export default function ProductsPage() {
                 key={product.id}
                 className={isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}
               >
-                {/* Image */}
-                <td className="p-2 border-b flex justify-center">
-                  <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-md border">
+                {/* Image - FIXED */}
+                <td className="p-3 border-b text-center align-middle">
+                  <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-md border mx-auto">
                     <Image
                       src={productImages[index % productImages.length]}
                       alt={product.name}
                       width={48}
                       height={48}
-                      style={{ width: '48px', height: 'auto' }}
-                      className="object-contain"
+                      className="object-contain w-full h-full"
                     />
                   </div>
                 </td>
 
-                <td className="p-2 border-b text-center">{product.name}</td>
-                <td className="p-2 border-b text-center">₹{product.price}</td>
-                <td className="p-2 border-b text-center">{product.stockQuantity}</td>
-                <td className="p-2 border-b text-center">{product.rating ?? '-'}</td>
-                <td className="p-2 border-b flex justify-center gap-2">
+                {/* Name */}
+                <td className="p-3 border-b text-center align-middle">
+                  {product.name}
+                </td>
+
+                {/* Price */}
+                <td className="p-3 border-b text-center align-middle">
+                  ₹{product.price}
+                </td>
+
+                {/* Stock */}
+                <td className="p-3 border-b text-center align-middle">
+                  {product.stockQuantity}
+                </td>
+
+                {/* Rating */}
+                <td className="p-3 border-b text-center align-middle">
+                  {product.rating ?? '-'}
+                </td>
+
+                {/* Actions - FIXED */}
+                <td className="p-3 border-b text-center align-middle">
                   {isAdmin ? (
-                    <>
+                    <div className="flex justify-center gap-2">
                       <button
                         onClick={() => openEditModal(product.id)}
                         className="px-3 py-1 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 shadow-md transition"
@@ -137,7 +153,7 @@ export default function ProductsPage() {
                       >
                         Delete
                       </button>
-                    </>
+                    </div>
                   ) : (
                     <span className="text-gray-400">Read-only</span>
                   )}

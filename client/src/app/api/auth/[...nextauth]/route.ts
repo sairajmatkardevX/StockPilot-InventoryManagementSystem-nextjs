@@ -13,8 +13,9 @@ export const authOptions: AuthOptions = {
         if (!credentials?.email || !credentials?.password) return null;
 
         try {
+          // ✅ CHANGED: Call internal Next.js API route instead of Express
           const res = await fetch(
-            `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/auth/login`,
+            `http://localhost:3000/api/auth/login`,
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -47,13 +48,13 @@ export const authOptions: AuthOptions = {
     }),
   ],
 
-  //  Session configuration (15 minutes)
+  // Session configuration (15 minutes)
   session: { 
     strategy: "jwt",
     maxAge: 15 * 60, // 15 minutes in seconds
   },
 
-  //  JWT configuration
+  // JWT configuration
   jwt: {
     maxAge: 15 * 60, // 15 minutes in seconds
   },

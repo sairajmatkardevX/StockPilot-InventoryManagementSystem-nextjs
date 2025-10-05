@@ -102,7 +102,7 @@ export default function UsersPage() {
 
   return (
     <div className="p-6">
-      {/* Header - REMOVED isAdmin CHECK so all users see the page */}
+      {/* Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
         <h1 className="text-2xl font-bold">Users</h1>
         {isAdmin && (
@@ -115,7 +115,7 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* Search - Available to all users */}
+      {/* Search */}
       <div className="mb-4 w-full md:w-1/3">
         <input
           type="text"
@@ -129,17 +129,16 @@ export default function UsersPage() {
         />
       </div>
 
-      {/* Table - Show to all users */}
+      {/* Table - FIXED ALIGNMENT */}
       <div className={`overflow-x-auto rounded-lg shadow ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <table className="w-full min-w-[700px] border-collapse text-left">
+        <table className="w-full min-w-[700px] border-collapse">
           <thead className={isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-100'}>
             <tr>
-              <th className="p-2 border-b text-center w-16">Avatar</th>
-              <th className="p-2 border-b text-center w-36">Name</th>
-              <th className="p-2 border-b text-center w-48">Email</th>
-              <th className="p-2 border-b text-center w-24">Role</th>
-              {/* Actions column shows for ALL users but content is admin-only */}
-              <th className="p-2 border-b text-center w-40">Actions</th>
+              <th className="p-3 border-b text-center w-20">Avatar</th>
+              <th className="p-3 border-b text-center w-40">Name</th>
+              <th className="p-3 border-b text-center w-48">Email</th>
+              <th className="p-3 border-b text-center w-32">Role</th>
+              <th className="p-3 border-b text-center w-48">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -148,28 +147,38 @@ export default function UsersPage() {
                 key={user.userId}
                 className={isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}
               >
-                {/* Avatar */}
-                <td className="p-2 border-b flex justify-center">
-                  <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full border">
+                {/* Avatar - FIXED */}
+                <td className="p-3 border-b text-center align-middle">
+                  <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full border mx-auto">
                     <Image
                       src={dummyImages[index % dummyImages.length]}
                       alt={user.name}
                       width={48}
                       height={48}
-                      style={{ width: '48px', height: 'auto' }}
-                      className="object-cover rounded-full"
+                      className="object-cover rounded-full w-full h-full"
                     />
                   </div>
                 </td>
 
-                <td className="p-2 border-b text-center">{user.name}</td>
-                <td className="p-2 border-b text-center">{user.email || '-'}</td>
-                <td className="p-2 border-b text-center">{user.role}</td>
+                {/* Name - FIXED */}
+                <td className="p-3 border-b text-center align-middle">
+                  {user.name}
+                </td>
+
+                {/* Email - FIXED */}
+                <td className="p-3 border-b text-center align-middle">
+                  {user.email || '-'}
+                </td>
+
+                {/* Role - FIXED */}
+                <td className="p-3 border-b text-center align-middle">
+                  {user.role}
+                </td>
                 
-                {/* Actions - Show different content based on admin status */}
-                <td className="p-2 border-b flex justify-center gap-2">
+                {/* Actions - FIXED */}
+                <td className="p-3 border-b text-center align-middle">
                   {isAdmin ? (
-                    <>
+                    <div className="flex justify-center gap-2">
                       <button
                         onClick={() => handleEdit(user)}
                         className="px-3 py-1 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 shadow-md transition"
@@ -182,7 +191,7 @@ export default function UsersPage() {
                       >
                         Delete
                       </button>
-                    </>
+                    </div>
                   ) : (
                     <span className="text-gray-400 text-sm">Read-only</span>
                   )}
@@ -200,7 +209,7 @@ export default function UsersPage() {
         </table>
       </div>
 
-      {/* Pagination - Available to all users */}
+      {/* Pagination */}
       {filteredUsers.length > usersPerPage && (
         <div className="flex justify-between items-center mt-4">
           <button
@@ -223,7 +232,7 @@ export default function UsersPage() {
         </div>
       )}
 
-      {/* Modal - Admin only */}
+      {/* Modal */}
       {isAdmin && open && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className={`rounded-lg p-6 w-full max-w-md ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>

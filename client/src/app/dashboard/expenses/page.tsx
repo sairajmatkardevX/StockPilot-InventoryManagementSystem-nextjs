@@ -55,7 +55,7 @@ export default function ExpensesPage() {
         const token = (session?.user as any)?.token;
         if (!token) throw new Error('No token found');
 
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/expenses`, {
+       const res = await fetch('/api/expense', {
           headers: { Authorization: `Bearer ${token}` },
         });
         const data = await res.json();
