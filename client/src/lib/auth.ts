@@ -1,8 +1,7 @@
 import jwt from "jsonwebtoken";
 import { NextRequest } from 'next/server';
 
-// TEMPORARY HARCODED FOR DEMO - replace process.env.JWT_SECRET!
-const JWT_SECRET = 'd9f3a7b1c2e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0';
+const JWT_SECRET = process.env.JWT_SECRET!;
 
 export interface JWTPayload {
   id: string;
