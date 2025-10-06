@@ -201,5 +201,19 @@
     "email": "sblundels@csmonitor.com",
     "password": "user123",
     "role": "user"
+  } ,
+   {
+    "userId": 1,
+    "name": "System Administrator",
+    "email": "admin@stockpilot.com",
+    "password": "Admin@123",
+    "role": "ADMIN"
+  },
+  {
+    "userId": 2,
+    "name": "Demo User",
+    "email": "user@stockpilot.com", 
+    "password": "User@123",
+    "role": "USER"
   }
 ]

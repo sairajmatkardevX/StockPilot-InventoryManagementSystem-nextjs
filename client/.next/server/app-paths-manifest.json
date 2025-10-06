@@ -1,17 +1,8 @@
 {
-  "/_not-found/page": "app/_not-found/page.js",
-  "/login/page": "app/login/page.js",
+  "/page": "app/page.js",
+  "/favicon.ico/route": "app/favicon.ico/route.js",
   "/api/auth/[...nextauth]/route": "app/api/auth/[...nextauth]/route.js",
-  "/register/page": "app/register/page.js",
-  "/api/auth/register/route": "app/api/auth/register/route.js",
   "/api/dashboard/route": "app/api/dashboard/route.js",
-  "/api/products/route": "app/api/products/route.js",
-  "/api/expense/route": "app/api/expense/route.js",
-  "/api/users/route": "app/api/users/route.js",
-  "/dashboard/page": "app/dashboard/page.js",
-  "/dashboard/expenses/page": "app/dashboard/expenses/page.js",
-  "/dashboard/settings/page": "app/dashboard/settings/page.js",
-  "/dashboard/products/page": "app/dashboard/products/page.js",
-  "/dashboard/inventory/page": "app/dashboard/inventory/page.js",
-  "/dashboard/users/page": "app/dashboard/users/page.js"
+  "/login/page": "app/login/page.js",
+  "/dashboard/page": "app/dashboard/page.js"
 }
