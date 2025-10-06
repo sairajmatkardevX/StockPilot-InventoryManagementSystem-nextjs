@@ -1,18 +1,23 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticateRequest, requireAdmin } from '@/lib/auth';
-import {prisma} from '@/lib/prisma';
+import { NextResponse } from 'next/server';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from '@/lib/prisma';
+import bcrypt from 'bcryptjs';
 
 // GET /api/users/[id] - Get user by ID (admin only)
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { user, error } = await authenticateRequest(request);
-    if (error || !user) {
+    // ✅ CHANGED: Use NextAuth session instead of JWT
+    const session = await getServerSession(authOptions);
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!requireAdmin(user)) {
+
+    // ✅ CHANGED: Check admin role from session
+    if (session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -53,15 +58,18 @@ export async function GET(
 
 // PUT /api/users/[id] - Update user (admin only)
 export async function PUT(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { user, error } = await authenticateRequest(request);
-    if (error || !user) {
+    // ✅ CHANGED: Use NextAuth session instead of JWT
+    const session = await getServerSession(authOptions);
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!requireAdmin(user)) {
+
+    // ✅ CHANGED: Check admin role from session
+    if (session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
@@ -77,7 +85,7 @@ export async function PUT(
 
     const updateData: any = { name, email, role };
     if (password) {
-      const bcrypt = await import('bcryptjs');
+      // ✅ CHANGED: Use direct bcrypt import
       updateData.password = await bcrypt.hash(password, 10);
     }
 
@@ -103,15 +111,18 @@ export async function PUT(
 
 // DELETE /api/users/[id] - Delete user (admin only)
 export async function DELETE(
-  request: NextRequest,
+  request: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const { user, error } = await authenticateRequest(request);
-    if (error || !user) {
+    // Use NextAuth session instead of JWT
+    const session = await getServerSession(authOptions);
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (!requireAdmin(user)) {
+
+    // ✅ CHANGED: Check admin role from session
+    if (session.user.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 

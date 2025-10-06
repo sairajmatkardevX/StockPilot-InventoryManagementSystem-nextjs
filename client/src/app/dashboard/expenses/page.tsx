@@ -52,12 +52,8 @@ export default function ExpensesPage() {
 
     const fetchExpenses = async () => {
       try {
-        const token = (session?.user as any)?.token;
-        if (!token) throw new Error('No token found');
-
-       const res = await fetch('/api/expense', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        // ✅ FIXED: Remove token logic - cookies are automatically sent
+        const res = await fetch('/api/expense');
         const data = await res.json();
 
         if (Array.isArray(data) && data.length > 0) {
@@ -108,6 +104,8 @@ export default function ExpensesPage() {
 
     fetchExpenses();
   }, [session, status]);
+
+  // ... rest of your code remains the same ...
 
   // Update date range when category changes
   useEffect(() => {

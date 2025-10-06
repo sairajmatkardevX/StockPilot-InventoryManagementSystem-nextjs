@@ -1,12 +1,13 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { authenticateRequest } from '@/lib/auth';
-import {prisma} from '@/lib/prisma';
+import { NextResponse } from 'next/server';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { prisma } from '@/lib/prisma';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    // Authenticate user
-    const { user, error } = await authenticateRequest(request);
-    if (error || !user) {
+    // ✅ CHANGED: Use NextAuth session instead of JWT
+    const session = await getServerSession(authOptions);
+    if (!session) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
