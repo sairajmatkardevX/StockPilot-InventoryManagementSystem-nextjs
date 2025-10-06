@@ -4,6 +4,7 @@ import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { prisma } from '@/lib/prisma';
 
 // GET /api/expense - Get expenses by category (protected)
+export const dynamic = 'force-dynamic';
 export async function GET() {
   try {
     // ✅ CHANGED: Use NextAuth session instead of JWT
