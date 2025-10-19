@@ -11,8 +11,8 @@ export default function Home() {
   useEffect(() => {
     if (status === "loading") return;
 
-    if (session) router.push("/dashboard"); // logged in → dashboard
-    else router.push("/login"); // not logged in → login
+    if (session) router.push("/dashboard"); 
+    else router.push("/login");
   }, [session, status, router]);
 
   return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
