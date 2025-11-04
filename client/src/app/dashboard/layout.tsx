@@ -1,7 +1,7 @@
 'use client';
 
-import Navbar from "@/app/(components)/Navbar";
-import Sidebar from "@/app/(components)/Sidebar";
+import Navbar from "../../components/Navbar";
+import Sidebar from "../../components/Sidebar";
 import { useAppSelector } from "@/app/redux";
 import DashboardWrapper from "./wrapper";
 
@@ -10,26 +10,31 @@ interface Props {
 }
 
 export default function DashboardLayout({ children }: Props) {
-  const isSidebarCollapsed = useAppSelector((state) => state.global.isSidebarCollapsed);
-  const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+  const isSidebarCollapsed = useAppSelector(
+    (state) => state.global.isSidebarCollapsed
+  );
 
   return (
     <DashboardWrapper allowedRoles={["USER", "ADMIN"]}>
-      <div className={`flex min-h-screen w-full ${isDarkMode ? "dark bg-gray-900 text-white" : "light bg-gray-50 text-gray-900"}`}>
+      <div className="flex min-h-screen w-full bg-background text-foreground transition-colors">
         {/* Sidebar */}
-        <Sidebar />
+        <aside className="flex-shrink-0">
+          <Sidebar />
+        </aside>
 
-        {/* Main content */}
-        <div className={`flex-1 flex flex-col transition-all duration-300 ${isSidebarCollapsed ? "md:ml-16" : "md:ml-64"}`}>
-          {/* Navbar - sticky at top */}
-          <div className="sticky top-0 z-30 flex-shrink-0">
+        {/* Main Section */}
+        <div
+          className={`flex flex-1 flex-col transition-[margin] duration-300 ${
+            isSidebarCollapsed ? "md:ml-16" : "md:ml-64"
+          }`}
+        >
+          {/* Navbar */}
+          <header className="sticky top-0 z-30 flex-shrink-0 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b border-border">
             <Navbar />
-          </div>
+          </header>
 
-          {/* Page content - NO SCROLLBAR */}
-          <main className="flex-1 overflow-hidden">
-            {children}
-          </main>
+          {/* Page Content */}
+          <main className="flex-1 overflow-hidden p-4">{children}</main>
         </div>
       </div>
     </DashboardWrapper>

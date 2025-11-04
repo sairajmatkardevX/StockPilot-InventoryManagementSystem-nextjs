@@ -3,7 +3,10 @@
 import Image from "next/image";
 import { ShoppingBag } from "lucide-react";
 import React from "react";
-import Rating from "@/app/(components)/Rating";
+import Rating from "../../../components/Rating";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 
 interface Product {
   id: string;
@@ -27,45 +30,46 @@ const CardPopularProducts = ({ products }: CardPopularProductsProps) => {
 
   if (!products || products.length === 0) {
     return (
-      <div className="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-5 h-full">
-        <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
-          Popular Products
-        </h2>
-        <hr className="border-gray-200 dark:border-gray-700 mb-4" />
-        <div className="text-gray-500 dark:text-gray-300">No products found</div>
-      </div>
+      <Card className="h-full">
+        <CardHeader>
+          <CardTitle>Popular Products</CardTitle>
+          <CardDescription>Most popular items by sales</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-muted-foreground text-center py-8">No products found</div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-5 flex flex-col hover:shadow-lg transition-shadow duration-200 h-full">
-      <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
-        Popular Products
-      </h2>
-      <hr className="border-gray-200 dark:border-gray-700 mb-4" />
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <CardTitle>Popular Products</CardTitle>
+        <CardDescription>Most popular items by sales</CardDescription>
+      </CardHeader>
 
-      {/* List of products */}
-      <div className="flex flex-col gap-4">
+      <CardContent className="flex flex-col gap-4">
         {products.slice(0, 6).map((product, index) => (
           <div
             key={product.id}
-            className="flex justify-between items-center p-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+            className="flex justify-between items-center p-3 rounded-lg hover:bg-accent transition-colors"
           >
             {/* Left side with image + info */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
               <Image
                 src={`/images/products/product${index + 1}.png`}
                 alt={product.name}
                 width={48}
                 height={48}
-                className="rounded-md object-cover w-12 h-12"
+                className="rounded-md object-cover w-12 h-12 flex-shrink-0"
               />
-              <div className="flex flex-col gap-1">
-                <span className="font-semibold text-gray-800 dark:text-gray-100">
+              <div className="flex flex-col gap-1 min-w-0 flex-1">
+                <span className="font-semibold text-foreground truncate">
                   {product.name}
                 </span>
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="text-blue-500 font-bold">
+                  <span className="text-primary font-bold">
                     ${product.price}
                   </span>
                   <Rating rating={product.rating || 0} />
@@ -74,16 +78,18 @@ const CardPopularProducts = ({ products }: CardPopularProductsProps) => {
             </div>
 
             {/* Right side actions */}
-            <div className="flex items-center gap-2 text-xs">
-              <button className="p-2 rounded-full bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-300">
+            <div className="flex items-center gap-2 text-xs flex-shrink-0">
+              <Button variant="ghost" size="icon" className="h-8 w-8">
                 <ShoppingBag className="w-4 h-4" />
-              </button>
-              <span>{formatSold(product.stockQuantity)}</span>
+              </Button>
+              <Badge variant="secondary">
+                {formatSold(product.stockQuantity)}
+              </Badge>
             </div>
           </div>
         ))}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

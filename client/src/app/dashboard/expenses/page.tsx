@@ -10,7 +10,12 @@ import {
   Legend,
   ResponsiveContainer,
 } from 'recharts';
-import { useAppSelector } from '@/app/redux';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Expense = {
   expenseId: string;
@@ -20,19 +25,18 @@ type Expense = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Salaries: '#1f77b4',
-  Office: '#ff7f0e',
-  Professional: '#2ca02c',
-  Utilities: '#d62728',
-  Others: '#9467bd',
+  Salaries: 'hsl(var(--chart-1))',
+  Office: 'hsl(var(--chart-2))',
+  Professional: 'hsl(var(--chart-3))',
+  Utilities: 'hsl(var(--chart-4))',
+  Others: 'hsl(var(--chart-5))',
 };
 
 const getCategoryColor = (category: string) =>
-  CATEGORY_COLORS[category] || '#8c564b';
+  CATEGORY_COLORS[category] || 'hsl(var(--muted-foreground))';
 
 export default function ExpensesPage() {
   const { data: session, status } = useSession();
-  const isDarkMode = useAppSelector(state => state.global.isDarkMode);
 
   const [expenses, setExpenses] = useState<Expense[]>([]);
   const [categories, setCategories] = useState<string[]>(['All']);
@@ -52,12 +56,10 @@ export default function ExpensesPage() {
 
     const fetchExpenses = async () => {
       try {
-        // ✅ FIXED: Remove token logic - cookies are automatically sent
         const res = await fetch('/api/expense');
         const data = await res.json();
 
         if (Array.isArray(data) && data.length > 0) {
-          // Normalize backend data
           const normalized = data
             .filter(e => e.date && e.amount && e.category)
             .map(e => ({
@@ -83,7 +85,6 @@ export default function ExpensesPage() {
           setAppliedStartDate(min);
           setAppliedEndDate(max);
         } else {
-          // No expenses returned
           setExpenses([]);
           setCategories(['All']);
           setMinDate('');
@@ -105,9 +106,6 @@ export default function ExpensesPage() {
     fetchExpenses();
   }, [session, status]);
 
-  // ... rest of your code remains the same ...
-
-  // Update date range when category changes
   useEffect(() => {
     if (!expenses.length) return;
     let filtered = expenses;
@@ -123,7 +121,6 @@ export default function ExpensesPage() {
     setAppliedEndDate(max);
   }, [categoryFilter, expenses]);
 
-  // Enable Apply button only when dates change
   useEffect(() => {
     setApplyDisabled(startDate === appliedStartDate && endDate === appliedEndDate);
   }, [startDate, endDate, appliedStartDate, appliedEndDate]);
@@ -163,103 +160,131 @@ export default function ExpensesPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center py-20 text-gray-500">
-        Loading...
+      <div className="p-6 space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <div className="flex flex-wrap gap-4">
+          <Skeleton className="h-16 w-40" />
+          <Skeleton className="h-16 w-40" />
+          <Skeleton className="h-16 w-40" />
+          <Skeleton className="h-10 w-24" />
+          <Skeleton className="h-10 w-24" />
+        </div>
+        <Skeleton className="h-96 w-full" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 flex flex-col gap-6">
+    <div className="p-6 space-y-6">
       {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <h1 className="text-2xl font-bold">Expenses Dashboard</h1>
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle>Expenses Dashboard</CardTitle>
+          <CardDescription>View and analyze your expense data</CardDescription>
+        </CardHeader>
+      </Card>
 
       {/* Filters */}
-      <div className="flex flex-wrap gap-4 items-end">
-        <div className="flex flex-col">
-          <label className="mb-1 font-medium">Category</label>
-          <select
-            className="border rounded-lg px-3 py-2 w-40 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            value={categoryFilter || 'All'}
-            onChange={e => setCategoryFilter(e.target.value)}
-          >
-            {categories.map(cat => (
-              <option key={cat} value={cat}>{cat}</option>
-            ))}
-          </select>
-        </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Filters</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-4 items-end">
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-40">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map(cat => (
+                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-        <div className="flex flex-col">
-          <label className="mb-1 font-medium">Start Date</label>
-          <input
-            type="date"
-            className="border rounded-lg px-3 py-2 w-40 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            value={startDate || ''}
-            min={minDate || ''}
-            max={maxDate || ''}
-            onChange={e => setStartDate(e.target.value)}
-          />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="start-date">Start Date</Label>
+              <Input
+                id="start-date"
+                type="date"
+                className="w-40"
+                value={startDate}
+                min={minDate}
+                max={maxDate}
+                onChange={e => setStartDate(e.target.value)}
+              />
+            </div>
 
-        <div className="flex flex-col">
-          <label className="mb-1 font-medium">End Date</label>
-          <input
-            type="date"
-            className="border rounded-lg px-3 py-2 w-40 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            value={endDate || ''}
-            min={minDate || ''}
-            max={maxDate || ''}
-            onChange={e => setEndDate(e.target.value)}
-          />
-        </div>
+            <div className="space-y-2">
+              <Label htmlFor="end-date">End Date</Label>
+              <Input
+                id="end-date"
+                type="date"
+                className="w-40"
+                value={endDate}
+                min={minDate}
+                max={maxDate}
+                onChange={e => setEndDate(e.target.value)}
+              />
+            </div>
 
-        <button
-          className={`px-4 py-2 rounded-lg font-semibold transition ${
-            applyDisabled
-              ? 'bg-green-300 text-white cursor-not-allowed'
-              : 'bg-green-500 hover:bg-green-600 text-white'
-          }`}
-          disabled={applyDisabled}
-          onClick={handleApplyFilters}
-        >
-          Apply
-        </button>
+            <Button
+              disabled={applyDisabled}
+              onClick={handleApplyFilters}
+              className="h-10"
+            >
+              Apply
+            </Button>
 
-        <button
-          className="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-lg font-semibold transition"
-          onClick={handleResetFilters}
-        >
-          Reset
-        </button>
-      </div>
+            <Button
+              variant="outline"
+              onClick={handleResetFilters}
+              className="h-10"
+            >
+              Reset
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Pie Chart */}
       {pieData.length > 0 ? (
-        <div className={`rounded-lg shadow p-4 ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-          <ResponsiveContainer width="100%" height={350}>
-            <PieChart>
-              <Pie
-                data={pieData}
-                dataKey="value"
-                nameKey="name"
-                cx="50%"
-                cy="50%"
-                outerRadius={120}
-                label
-              >
-                {pieData.map(entry => (
-                  <Cell key={entry.name} fill={getCategoryColor(entry.name)} />
-                ))}
-              </Pie>
-              <Tooltip formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]} />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Expense Distribution</CardTitle>
+            <CardDescription>Breakdown of expenses by category</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={350}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  dataKey="value"
+                  nameKey="name"
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={120}
+                  label
+                >
+                  {pieData.map(entry => (
+                    <Cell key={entry.name} fill={getCategoryColor(entry.name)} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value: number, name: string) => [`$${value.toLocaleString()}`, name]} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
       ) : (
-        <p className="text-gray-500 text-center py-8">No expenses found for selected filters.</p>
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <p className="text-muted-foreground">No expenses found for selected filters.</p>
+          </CardContent>
+        </Card>
       )}
     </div>
   );

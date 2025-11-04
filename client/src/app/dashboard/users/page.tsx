@@ -8,11 +8,20 @@ import {
   useUpdateUserMutation,
   useDeleteUserMutation,
 } from '@/state/api';
-import { useAppSelector } from '@/app/redux';
 import Image from 'next/image';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface User {
-  userId: string;
+  userId: string; // Changed to string to match API
   name: string;
   email?: string;
   role: 'ADMIN' | 'USER';
@@ -30,7 +39,6 @@ const dummyImages = [
 export default function UsersPage() {
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === 'ADMIN';
-  const isDarkMode = useAppSelector(state => state.global.isDarkMode);
 
   const { data: usersData, isLoading, isError } = useGetUsersQuery();
   const [createUser] = useCreateUserMutation();
@@ -39,18 +47,32 @@ export default function UsersPage() {
 
   const [open, setOpen] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
-  const [formData, setFormData] = useState({ name: '', email: '', role: 'USER', password: '' });
+  const [formData, setFormData] = useState({ 
+    name: '', 
+    email: '', 
+    role: 'USER' as 'USER' | 'ADMIN', // Fixed type
+    password: '' 
+  });
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
   const [usersPerPage] = useState(6);
 
-  const users: User[] = useMemo(() => usersData || [], [usersData]);
+  // Fixed: Handle API data type conversion
+  const users: User[] = useMemo(() => {
+    if (!usersData) return [];
+    return usersData.map(user => ({
+      userId: user.userId.toString(), // Convert number to string
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    }));
+  }, [usersData]);
+
   const filteredUsers = useMemo(() =>
     users.filter(user => user.name.toLowerCase().includes(search.toLowerCase())),
     [users, search]
   );
 
-  // Paginated users
   const paginatedUsers = useMemo(() => {
     const startIndex = (page - 1) * usersPerPage;
     return filteredUsers.slice(startIndex, startIndex + usersPerPage);
@@ -66,30 +88,47 @@ export default function UsersPage() {
 
   const handleEdit = (user: User) => {
     setEditingUser(user);
-    setFormData({ name: user.name, email: user.email || '', role: user.role, password: '' });
+    setFormData({ 
+      name: user.name, 
+      email: user.email || '', 
+      role: user.role, 
+      password: '' 
+    });
     setOpen(true);
   };
 
   const handleDelete = async (userId: string) => {
-    if (confirm('Are you sure you want to delete this user?')) {
-      try {
-        await deleteUser(userId).unwrap();
-        alert('User deleted successfully ✅');
-        if (paginatedUsers.length === 1 && page > 1) {
-          setPage(page - 1);
-        }
-      } catch {
-        alert('Failed to delete user ❌');
+    try {
+      // Convert string userId back to number for API call
+      await deleteUser(parseInt(userId)).unwrap();
+      if (paginatedUsers.length === 1 && page > 1) {
+        setPage(page - 1);
       }
+    } catch {
+      alert('Failed to delete user ❌');
     }
   };
 
   const handleSave = async () => {
     try {
       if (editingUser) {
-        await updateUser({ id: editingUser.userId, ...formData }).unwrap();
+        // Convert string userId back to number for API call
+        await updateUser({ 
+          id: parseInt(editingUser.userId), 
+          body: {
+            name: formData.name,
+            email: formData.email,
+            role: formData.role,
+            ...(formData.password && { password: formData.password })
+          }
+        }).unwrap();
       } else {
-        await createUser(formData).unwrap();
+        await createUser({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          role: formData.role
+        }).unwrap();
       }
       setOpen(false);
     } catch {
@@ -97,211 +136,271 @@ export default function UsersPage() {
     }
   };
 
-  if (isLoading) return <div className="p-4">Loading users...</div>;
-  if (isError || !usersData) return <div className="p-4 text-red-500">Failed to load users</div>;
-
-  return (
-    <div className="p-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-        <h1 className="text-2xl font-bold">Users</h1>
-        {isAdmin && (
-          <button
-            onClick={handleOpen}
-            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg font-semibold hover:from-blue-600 hover:to-blue-700 shadow-md transition-shadow"
-          >
-            + Add User
-          </button>
-        )}
+  
+  if (isLoading) {
+    return (
+      <div className="p-6 space-y-6">
+        <Skeleton className="h-8 w-64" />
+        <Skeleton className="h-10 w-1/3" />
+        <Card>
+          <CardHeader>
+            <Skeleton className="h-6 w-48" />
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {[...Array(6)].map((_, i) => (
+              <Skeleton key={i} className="h-16 w-full" />
+            ))}
+          </CardContent>
+        </Card>
       </div>
+    );
+  }
+
+  if (isError || !usersData) {
+    return (
+      <Card className="m-6">
+        <CardContent className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="text-destructive text-lg font-semibold">Failed to load users</div>
+            <div className="text-muted-foreground mt-2">Please try again later</div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+   return (
+    <div className="p-6 space-y-6">
+      {/* Header */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>User Management</CardTitle>
+            <CardDescription>Manage system users and permissions</CardDescription>
+          </div>
+          {isAdmin && (
+            <Button onClick={handleOpen}>
+              + Add User
+            </Button>
+          )}
+        </CardHeader>
+      </Card>
 
       {/* Search */}
-      <div className="mb-4 w-full md:w-1/3">
-        <input
-          type="text"
-          placeholder="Search users..."
-          value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
-          className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
-        />
-      </div>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Search Users</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Input
+            type="text"
+            placeholder="Search users by name..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+            className="max-w-md"
+          />
+        </CardContent>
+      </Card>
 
-      {/* Table - FIXED ALIGNMENT */}
-      <div className={`overflow-x-auto rounded-lg shadow ${isDarkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <table className="w-full min-w-[700px] border-collapse">
-          <thead className={isDarkMode ? 'bg-gray-700 text-white' : 'bg-gray-100'}>
-            <tr>
-              <th className="p-3 border-b text-center w-20">Avatar</th>
-              <th className="p-3 border-b text-center w-40">Name</th>
-              <th className="p-3 border-b text-center w-48">Email</th>
-              <th className="p-3 border-b text-center w-32">Role</th>
-              <th className="p-3 border-b text-center w-48">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginatedUsers.map((user, index) => (
-              <tr
-                key={user.userId}
-                className={isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}
-              >
-                {/* Avatar - FIXED */}
-                <td className="p-3 border-b text-center align-middle">
-                  <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full border mx-auto">
-                    <Image
-                      src={dummyImages[index % dummyImages.length]}
-                      alt={user.name}
-                      width={48}
-                      height={48}
-                      className="object-cover rounded-full w-full h-full"
-                    />
-                  </div>
-                </td>
-
-                {/* Name - FIXED */}
-                <td className="p-3 border-b text-center align-middle">
-                  {user.name}
-                </td>
-
-                {/* Email - FIXED */}
-                <td className="p-3 border-b text-center align-middle">
-                  {user.email || '-'}
-                </td>
-
-                {/* Role - FIXED */}
-                <td className="p-3 border-b text-center align-middle">
-                  {user.role}
-                </td>
-                
-                {/* Actions - FIXED */}
-                <td className="p-3 border-b text-center align-middle">
-                  {isAdmin ? (
-                    <div className="flex justify-center gap-2">
-                      <button
-                        onClick={() => handleEdit(user)}
-                        className="px-3 py-1 bg-yellow-400 text-white rounded-lg hover:bg-yellow-500 shadow-md transition"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => handleDelete(user.userId)}
-                        className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 shadow-md transition"
-                      >
-                        Delete
-                      </button>
+      {/* Users Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Users</CardTitle>
+          <CardDescription>
+            {filteredUsers.length} users found
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-20">Avatar</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead className="text-center">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {paginatedUsers.map((user, index) => (
+                <TableRow key={user.userId} className="hover:bg-accent/50">
+                  <TableCell>
+                    <div className="w-12 h-12 flex items-center justify-center overflow-hidden rounded-full border">
+                      <Image
+                        src={dummyImages[index % dummyImages.length]}
+                        alt={user.name}
+                        width={48}
+                        height={48}
+                        className="object-cover rounded-full"
+                      />
                     </div>
-                  ) : (
-                    <span className="text-gray-400 text-sm">Read-only</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-            {paginatedUsers.length === 0 && (
-              <tr>
-                <td colSpan={5} className="text-center p-4 text-gray-500">
-                  No users found
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+                  </TableCell>
+                  <TableCell className="font-medium">{user.name}</TableCell>
+                  <TableCell>{user.email || '-'}</TableCell>
+                  <TableCell>
+                    <Badge variant={user.role === 'ADMIN' ? 'default' : 'secondary'}>
+                      {user.role}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    {isAdmin ? (
+                      <div className="flex justify-center gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(user)}
+                        >
+                          Edit
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">
+                              Delete
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the user
+                                "{user.name}" from the system.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(user.userId)}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                Delete
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    ) : (
+                      <Badge variant="outline" className="text-muted-foreground">
+                        Read-only
+                      </Badge>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+              {paginatedUsers.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    <div className="text-muted-foreground">
+                      No users found matching your search
+                    </div>
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
       {/* Pagination */}
       {filteredUsers.length > usersPerPage && (
-        <div className="flex justify-between items-center mt-4">
-          <button
-            disabled={page === 1}
-            onClick={() => setPage((p) => p - 1)}
-            className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100 transition-colors"
-          >
-            Previous
-          </button>
-          <span className="font-medium">
-            Page {page} of {totalPages}
-          </span>
-          <button
-            disabled={page === totalPages}
-            onClick={() => setPage((p) => p + 1)}
-            className="px-3 py-1 border rounded-lg disabled:opacity-50 hover:bg-gray-100 transition-colors"
-          >
-            Next
-          </button>
-        </div>
+        <Card>
+          <CardContent className="flex justify-between items-center py-4">
+            <Button
+              variant="outline"
+              disabled={page === 1}
+              onClick={() => setPage((p) => p - 1)}
+            >
+              Previous
+            </Button>
+            <div className="flex items-center gap-2 text-sm">
+              <span className="font-medium">Page</span>
+              <Badge variant="secondary">
+                {page} of {totalPages}
+              </Badge>
+            </div>
+            <Button
+              variant="outline"
+              disabled={page === totalPages}
+              onClick={() => setPage((p) => p + 1)}
+            >
+              Next
+            </Button>
+          </CardContent>
+        </Card>
       )}
 
-      {/* Modal */}
-      {isAdmin && open && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className={`rounded-lg p-6 w-full max-w-md ${isDarkMode ? 'bg-gray-800 text-white' : 'bg-white text-gray-900'}`}>
-            <h2 className="text-xl font-bold mb-4">{editingUser ? 'Edit User' : 'Add User'}</h2>
-            
-            <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleSave(); }}>
-              <div>
-                <label className="block text-sm font-medium mb-1">Name</label>
-                <input
+      {/* User Modal */}
+      {isAdmin && (
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>{editingUser ? 'Edit User' : 'Add User'}</DialogTitle>
+              <DialogDescription>
+                {editingUser ? 'Update user information.' : 'Create a new user account.'}
+              </DialogDescription>
+            </DialogHeader>
+
+            <form onSubmit={(e) => { e.preventDefault(); handleSave(); }} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Name</Label>
+                <Input
+                  id="name"
                   type="text"
                   value={formData.name}
                   onChange={e => setFormData({ ...formData, name: e.target.value })}
-                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                   required
                 />
               </div>
               
-              <div>
-                <label className="block text-sm font-medium mb-1">Email</label>
-                <input
+              <div className="space-y-2">
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
                   type="email"
                   value={formData.email}
                   onChange={e => setFormData({ ...formData, email: e.target.value })}
-                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                   required
                 />
               </div>
               
-              <div>
-                <label className="block text-sm font-medium mb-1">Password</label>
-                <input
+              <div className="space-y-2">
+                <Label htmlFor="password">Password</Label>
+                <Input
+                  id="password"
                   type="password"
                   value={formData.password}
                   onChange={e => setFormData({ ...formData, password: e.target.value })}
-                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
                   required={!editingUser}
+                  placeholder={editingUser ? "Leave blank to keep current" : ""}
                 />
               </div>
               
-              <div>
-                <label className="block text-sm font-medium mb-1">Role</label>
-                <select
-                  value={formData.role}
-                  onChange={e => setFormData({ ...formData, role: e.target.value as 'ADMIN' | 'USER' })}
-                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option value="USER">USER</option>
-                  <option value="ADMIN">ADMIN</option>
-                </select>
+              <div className="space-y-2">
+                <Label htmlFor="role">Role</Label>
+                <Select value={formData.role} onValueChange={(value: 'ADMIN' | 'USER') => setFormData({ ...formData, role: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USER">USER</SelectItem>
+                    <SelectItem value="ADMIN">ADMIN</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
               
-              <div className="flex gap-2 justify-end mt-6">
-                <button
-                  type="button"
-                  onClick={() => setOpen(false)}
-                  className="px-4 py-2 border rounded-lg hover:bg-gray-100 transition-colors"
-                >
+              <DialogFooter>
+                <Button type="button" variant="outline" onClick={() => setOpen(false)}>
                   Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-                >
-                  Save
-                </button>
-              </div>
+                </Button>
+                <Button type="submit">
+                  {editingUser ? 'Update User' : 'Create User'}
+                </Button>
+              </DialogFooter>
             </form>
-          </div>
-        </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );

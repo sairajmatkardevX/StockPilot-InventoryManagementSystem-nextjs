@@ -1,99 +1,80 @@
 import type { Config } from "tailwindcss";
-import { createThemes } from "tw-colors";
-import colors from "tailwindcss/colors";
+import animate from "tailwindcss-animate";
 
 const config: Config = {
-  darkMode: "class",
+  darkMode: ["class"],
   content: [
-    "./src/app/**/*.{js,ts,jsx,tsx}", 
-    "./src/components/**/*.{js,ts,jsx,tsx}", 
-    "./src/pages/**/*.{js,ts,jsx,tsx}"
+    "./src/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./pages/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
   ],
   theme: {
-    extend: {
-      backgroundImage: {
-        "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "gradient-conic": "conic-gradient(from 180deg at 50% 50%, var(--tw-gradient-stops))",
+    container: {
+      center: true,
+      padding: "2rem",
+      screens: {
+        "2xl": "1400px",
       },
+    },
+    extend: {
       colors: {
-        // Custom semantic colors
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-        }
-      }
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
+        },
+        secondary: {
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
+        },
+        destructive: {
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        accent: {
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+      keyframes: {
+        "accordion-down": {
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
+        },
+        "accordion-up": {
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+      },
+      animation: {
+        "accordion-down": "accordion-down 0.2s ease-out",
+        "accordion-up": "accordion-up 0.2s ease-out",
+      },
     },
   },
-  plugins: [
-    createThemes({
-      light: {
-        // Light theme - professional colors
-        background: '#ffffff',
-        surface: '#f8fafc',
-        'surface-hover': '#f1f5f9',
-        text: {
-          primary: '#1e293b',
-          secondary: '#64748b',
-          muted: '#94a3b8',
-        },
-        border: '#e2e8f0',
-        accent: '#3b82f6',
-        success: '#10b981',
-        warning: '#f59e0b',
-        error: '#ef4444',
-        
-        // Base colors for light mode
-        gray: colors.gray,
-        red: colors.red,
-        green: colors.green,
-        blue: colors.blue,
-        yellow: colors.yellow,
-        indigo: colors.indigo,
-        purple: colors.purple,
-        pink: colors.pink,
-      },
-      dark: {
-        // Dark theme - professional dark colors
-        background: '#0f172a',
-        surface: '#1e293b',
-        'surface-hover': '#334155',
-        text: {
-          primary: '#f1f5f9',
-          secondary: '#cbd5e1',
-          muted: '#64748b',
-        },
-        border: '#334155',
-        accent: '#60a5fa',
-        success: '#34d399',
-        warning: '#fbbf24',
-        error: '#f87171',
-        
-        // Optimized dark mode colors
-        gray: {
-          50: '#1e293b',
-          100: '#334155',
-          200: '#475569',
-          300: '#64748b',
-          400: '#94a3b8',
-          500: '#cbd5e1',
-          600: '#e2e8f0',
-          700: '#f1f5f9',
-          800: '#f8fafc',
-          900: '#ffffff',
-        },
-        red: colors.red,
-        green: colors.green,
-        blue: colors.blue,
-        yellow: colors.yellow,
-        indigo: colors.indigo,
-        purple: colors.purple,
-        pink: colors.pink,
-      },
-    })
-  ],
+  plugins: [animate],
 };
 
 export default config;

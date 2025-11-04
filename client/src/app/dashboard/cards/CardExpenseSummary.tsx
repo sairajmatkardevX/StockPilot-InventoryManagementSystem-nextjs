@@ -2,6 +2,9 @@
 
 import { TrendingUp } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ExpenseByCategory {
   category: string;
@@ -14,14 +17,23 @@ interface CardExpenseSummaryProps {
   isLoading?: boolean;
 }
 
-const colors = ["#00C49F", "#0088FE", "#FFBB28"];
+const colors = ["hsl(var(--chart-1))", "hsl(var(--chart-2))", "hsl(var(--chart-3))"];
 
 const CardExpenseSummary = ({ expenses, expenseByCategory, isLoading = false }: CardExpenseSummaryProps) => {
   if (isLoading) {
     return (
-      <div className="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-5 flex justify-center items-center h-48">
-        <span className="text-gray-600 dark:text-gray-300">Loading...</span>
-      </div>
+      <Card className="h-full">
+        <CardHeader>
+          <Skeleton className="h-6 w-32" />
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Skeleton className="h-32 w-full" />
+          <div className="space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
@@ -38,17 +50,13 @@ const CardExpenseSummary = ({ expenses, expenseByCategory, isLoading = false }: 
   const formattedTotalExpenses = totalExpenses.toFixed(2);
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-5 flex flex-col hover:shadow-lg transition-shadow duration-200 h-full">
-      {/* Header */}
-      <div className="mb-3">
-        <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">
-          Expense Summary
-        </h2>
-        <hr className="border-gray-200 dark:border-gray-700" />
-      </div>
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <CardTitle className="text-lg">Expense Summary</CardTitle>
+        <CardDescription>Overview of expenses by category</CardDescription>
+      </CardHeader>
 
-      {/* Body - FIXED HEIGHT */}
-      <div className="flex flex-col xl:flex-row items-center justify-between gap-4 flex-1 min-h-0">
+      <CardContent className="flex flex-col xl:flex-row items-center justify-between gap-4 flex-1 min-h-0">
         <div className="relative w-full xl:w-3/5 h-32">
           {expenseCategories.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
@@ -61,15 +69,13 @@ const CardExpenseSummary = ({ expenses, expenseByCategory, isLoading = false }: 
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex justify-center items-center h-full text-gray-500 dark:text-gray-400">
+            <div className="flex justify-center items-center h-full text-muted-foreground">
               No expenses yet
             </div>
           )}
 
           <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
-            <span className="font-bold text-lg text-gray-800 dark:text-gray-100">
-              ${formattedTotalExpenses}
-            </span>
+            <span className="font-bold text-lg">${formattedTotalExpenses}</span>
           </div>
         </div>
 
@@ -77,28 +83,27 @@ const CardExpenseSummary = ({ expenses, expenseByCategory, isLoading = false }: 
           {expenseCategories.map((entry, index) => (
             <li key={index} className="flex items-center text-sm">
               <span
-                className="w-3 h-3 rounded-full block mr-2"
+                className="w-3 h-3 rounded-full block mr-2 flex-shrink-0"
                 style={{ backgroundColor: colors[index % colors.length] }}
               />
-              <span className="text-gray-700 dark:text-gray-200">{entry.name}</span>
-              <span className="ml-auto font-semibold text-gray-800 dark:text-gray-100">
+              <span className="text-foreground truncate">{entry.name}</span>
+              <span className="ml-auto font-semibold text-foreground flex-shrink-0">
                 ${entry.value.toFixed(2)}
               </span>
             </li>
           ))}
         </ul>
-      </div>
+      </CardContent>
 
-      {/* Footer */}
-      <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm">
-        <span className="text-gray-600 dark:text-gray-300">
+      <CardFooter className="flex justify-between items-center text-sm pt-3 border-t">
+        <span className="text-muted-foreground">
           Average: <strong>${(expenses?.totalExpenses ?? 0).toFixed(2)}</strong>
         </span>
-        <span className="flex items-center text-green-500">
-          <TrendingUp className="w-4 h-4 mr-1" /> 30%
-        </span>
-      </div>
-    </div>
+        <Badge variant="secondary" className="flex items-center gap-1">
+          <TrendingUp className="w-3 h-3" /> 30%
+        </Badge>
+      </CardFooter>
+    </Card>
   );
 };
 

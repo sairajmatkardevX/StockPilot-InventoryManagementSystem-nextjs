@@ -3,6 +3,9 @@
 import { TrendingUp } from "lucide-react";
 import React, { useState } from "react";
 import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface SalesDataItem {
   date: string;
@@ -30,51 +33,67 @@ const CardSalesSummary = ({ sales }: CardSalesSummaryProps) => {
     : "N/A";
 
   return (
-    <div className="bg-white dark:bg-gray-800 shadow-md rounded-2xl p-5 flex flex-col hover:shadow-lg transition-shadow duration-200 h-full">
-      <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-200 mb-2">Sales Summary</h2>
-      <hr className="border-gray-200 dark:border-gray-700 mb-4" />
-
-      {/* Header Info */}
-      <div className="flex justify-between items-center mb-4">
-        <div>
-          <p className="text-xs text-gray-400 dark:text-gray-300">Value</p>
-          <p className="text-2xl font-bold text-gray-800 dark:text-gray-100">
-            ${Math.round(totalValueSum / 1000000)}m
-          </p>
-          <span className="text-green-500 flex items-center gap-1 text-sm">
-            <TrendingUp className="w-4 h-4" /> {averageChangePercentage.toFixed(2)}%
-          </span>
+    <Card className="h-full">
+      <CardHeader className="pb-3">
+        <div className="flex justify-between items-center">
+          <div>
+            <CardTitle>Sales Summary</CardTitle>
+            <CardDescription>Sales performance overview</CardDescription>
+          </div>
+          <Select value={timeframe} onValueChange={setTimeframe}>
+            <SelectTrigger className="w-24">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="daily">Daily</SelectItem>
+              <SelectItem value="weekly">Weekly</SelectItem>
+              <SelectItem value="monthly">Monthly</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-        <select
-          className="shadow-sm border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-900 p-2 rounded"
-          value={timeframe}
-          onChange={(e) => setTimeframe(e.target.value)}
-        >
-          <option value="daily">Daily</option>
-          <option value="weekly">Weekly</option>
-          <option value="monthly">Monthly</option>
-        </select>
-      </div>
+      </CardHeader>
 
-      {/* Chart  */}
-      <div className="w-full h-32 flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={sales}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-            <XAxis dataKey="date" hide />
-            <YAxis hide />
-            <Tooltip formatter={(value: number) => [`$${value.toLocaleString()}`]} />
-            <Bar dataKey="totalValue" fill="#3182ce" barSize={10} radius={[5, 5, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <CardContent className="space-y-4">
+        {/* Header Info */}
+        <div className="flex justify-between items-center">
+          <div>
+            <p className="text-sm text-muted-foreground">Total Value</p>
+            <p className="text-2xl font-bold">${Math.round(totalValueSum / 1000000)}m</p>
+            <Badge variant="secondary" className="flex items-center gap-1 mt-1">
+              <TrendingUp className="w-3 h-3" /> {averageChangePercentage.toFixed(2)}%
+            </Badge>
+          </div>
+        </div>
 
-      {/* Footer */}
-      <div className="mt-4 pt-3 border-t border-gray-200 dark:border-gray-700 flex justify-between text-sm text-gray-600 dark:text-gray-300">
-        <span>{sales.length} days</span>
-        <span>Highest Sales Date: <strong>{highestValueDate}</strong></span>
-      </div>
-    </div>
+        {/* Chart */}
+        <div className="w-full h-32">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={sales}>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" />
+              <XAxis dataKey="date" hide />
+              <YAxis hide />
+              <Tooltip 
+                formatter={(value: number) => [`$${value.toLocaleString()}`, "Sales"]}
+                labelFormatter={(label) => `Date: ${label}`}
+              />
+              <Bar 
+                dataKey="totalValue" 
+                fill="hsl(var(--primary))" 
+                barSize={10} 
+                radius={[5, 5, 0, 0]} 
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </CardContent>
+
+      <CardFooter className="flex justify-between text-sm pt-3 border-t">
+        <span className="text-muted-foreground">{sales.length} days</span>
+        <span className="text-muted-foreground">
+          Highest: <strong>{highestValueDate}</strong>
+        </span>
+      </CardFooter>
+    </Card>
   );
 };
 
