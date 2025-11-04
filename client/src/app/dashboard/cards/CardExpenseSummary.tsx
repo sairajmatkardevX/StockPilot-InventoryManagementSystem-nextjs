@@ -3,7 +3,7 @@
 import { TrendingUp } from "lucide-react";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from "../../../components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface ExpenseByCategory {

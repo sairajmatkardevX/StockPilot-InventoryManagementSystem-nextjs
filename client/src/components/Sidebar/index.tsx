@@ -11,7 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Building,
-  Boxes, // 👈 using this as the logo icon (you can change)
+  Boxes, 
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";

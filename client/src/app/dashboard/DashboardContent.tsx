@@ -3,7 +3,7 @@
 import { CheckCircle, Package, Tag, TrendingDown, TrendingUp } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useGetDashboardMetricsQuery } from "@/state/api";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "../../components/ui/skeleton";
 import CardExpenseSummary from "./cards/CardExpenseSummary";
 import CardPopularProducts from "./cards/CardPopularProducts";
 import CardPurchaseSummary from "./cards/CardPurchaseSummary";

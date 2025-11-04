@@ -8,7 +8,7 @@ export const api = createApi({
     baseUrl: "/api",
     prepareHeaders: async (headers) => {
       const session = await getSession();
-      const token = session?.user?.accessToken; // ✅ use accessToken from NextAuth
+      const token = session?.user?.accessToken; 
       if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
